@@ -47,6 +47,10 @@ if os.environ.get("MORPH_KEYWORDS") is not None:
 	keywordsString = os.environ["MORPH_KEYWORDS"]
 	keywords = keywordsString.lower().split("^")
 
+if os.environ.get('MORPH_DEBUG') == "1":
+	print(keywordsString)
+	print(keywords)
+	
 sleepTime = 5
 
 if os.environ.get("MORPH_SLEEP") is not None:
@@ -116,6 +120,8 @@ with requests.session() as s:
 					nextPageURL = checkURL+"&page="+str(page-1)
 					
 				print('requesting next page')
+				if os.environ.get('MORPH_DEBUG') == "1":
+					print(nextPageURL)
 				r1 = s.get(nextPageURL)
 				soup = BeautifulSoup(r1.content, 'html.parser')
 			#Loop over and visit each result and check if probate
