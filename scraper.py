@@ -60,7 +60,7 @@ if os.environ.get("MORPH_DOMAIN") is not None:
 	domain = os.environ["MORPH_DOMAIN"]
 	
 if os.environ.get("MORPH_FIRST_RUN") is not None:
-	if os.environ.get('MORPH_DEBUG') == "1":
+	if os.environ.get('MORPH_FIRST_RUN') == "1":
 		createStore()
 	
 	
@@ -131,6 +131,9 @@ with requests.session() as s:
 				
 				#get individual result page
 				time.sleep(sleepTime)
+				if os.environ.get('MORPH_DEBUG') == "1":
+					print('requesting result '+domain+resultLink)
+
 				r1 = s.get(domain+resultLink)
 				soup = BeautifulSoup(r1.content, 'html.parser')
 				advertDesc = str(soup.find("div", {"class" : "panel-content description-tabcontent"}))
