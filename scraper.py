@@ -46,10 +46,6 @@ keywords = []
 if os.environ.get("MORPH_KEYWORDS") is not None:
 	keywordsString = os.environ["MORPH_KEYWORDS"]
 	keywords = keywordsString.lower().split("^")
-
-if os.environ.get('MORPH_DEBUG') == "1":
-	print(keywordsString)
-	print(keywords)
 	
 sleepTime = 5
 
@@ -127,6 +123,9 @@ with requests.session() as s:
 			#Loop over and visit each result and check if probate
 			adverts = soup.findAll("li", {"class" : "result property-result panel"})
 			for advert in adverts:
+				if os.environ.get('MORPH_DEBUG') == "1":
+					print('searching through results')
+
 				resultLink = advert.find("span", {"class" : "title"}).a['href']
 				
 				#get individual result page
