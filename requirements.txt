@@ -1,2 +1,2 @@
--e git+http://github.com/openaustralia/scraperwiki-python.git@morph_defaults#egg=scraperwiki
+-e git+http://github.com/andylolz/scraperwiki-python.git@morph_defaults#egg=scraperwiki
 beautifulsoup4==4.6.3
