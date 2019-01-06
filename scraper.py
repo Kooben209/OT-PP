@@ -18,6 +18,10 @@ import json
 timestr = time.strftime("%d%m%Y-%H%M%S")
 currentScriptName=os.path.basename(__file__)
 
+def createStore():
+	scraperwiki.sqlite.execute("CREATE TABLE IF NOT EXISTS 'otmdata' ( 'propId' TEXT, link TEXT, title TEXT, address TEXT, price BIGINT, 'displayPrice' TEXT, image1 TEXT, 'pubDate' DATETIME, 'addedOrReduced' DATE, reduced BOOLEAN, location TEXT, CHECK (reduced IN (0, 1)), PRIMARY KEY('propId'))")
+	scraperwiki.sqlite.execute("CREATE UNIQUE INDEX IF NOT EXISTS 'otmdata_propId_unique' ON 'otmdata' ('propId')")
+
 def saveToStore(data):
 	scraperwiki.sqlite.execute("CREATE TABLE IF NOT EXISTS 'otmdata' ( 'propId' TEXT, link TEXT, title TEXT, address TEXT, price BIGINT, 'displayPrice' TEXT, image1 TEXT, 'pubDate' DATETIME, 'addedOrReduced' DATE, reduced BOOLEAN, location TEXT, CHECK (reduced IN (0, 1)), PRIMARY KEY('propId'))")
 	scraperwiki.sqlite.execute("CREATE UNIQUE INDEX IF NOT EXISTS 'otmdata_propId_unique' ON 'otmdata' ('propId')")
@@ -50,6 +54,10 @@ if os.environ.get("MORPH_SLEEP") is not None:
 
 if os.environ.get("MORPH_DOMAIN") is not None:
 	domain = os.environ["MORPH_DOMAIN"]
+	
+if os.environ.get("MORPH_FIRST_RUN") is not None:
+	if os.environ.get('MORPH_DEBUG') == "1":
+		createStore()
 	
 	
 with requests.session() as s:
