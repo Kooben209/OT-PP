@@ -121,7 +121,8 @@ with requests.session() as s:
 				r1 = s.get(nextPageURL)
 				soup = BeautifulSoup(r1.content, 'html.parser')
 			#Loop over and visit each result and check if probate
-			adverts = soup.findAll("li", {"class" : "result property-result panel "})
+			properties = soup.find("ul", {"id" : "properties"})
+			adverts = properties.findAll("li", {"class" : lambda L: L and L.startswith('result')})
 			for advert in adverts:
 				if os.environ.get('MORPH_DEBUG') == "1":
 					print('searching through results')
