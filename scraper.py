@@ -115,8 +115,8 @@ with requests.session() as s:
 					nextPageURL = checkURL+"?page="+str(page-1)					
 				else:
 					nextPageURL = checkURL+"&page="+str(page-1)
-					
-				print('requesting next page')
+				if os.environ.get('MORPH_DEBUG') == "1":	
+					print('requesting next page')
 				if os.environ.get('MORPH_DEBUG') == "1":
 					print(nextPageURL)
 				r1 = s.get(nextPageURL)
