@@ -14,6 +14,8 @@ import math
 import re
 import json
 
+#import setEnvs
+
 timestr = time.strftime("%d%m%Y-%H%M%S")
 currentScriptName=os.path.basename(__file__)
 
@@ -63,7 +65,7 @@ with requests.session() as s:
 	s.headers['user-agent'] = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36'
 	
 	#Loop through location URLs
-	totalNoProbates=0
+	totalNoMatchs=0
 	for k, v in filtered_dict.items():
 		location = k.replace("MORPH_URL_","").replace("_"," ").title()
 		checkURL = v
@@ -77,7 +79,7 @@ with requests.session() as s:
 		params = urlparse.parse_qs(parsedURL.query,keep_blank_values=1)
 			
 		#Get first page of results
-		print('Requesting results for '+location)
+		print('Requesting results')
 		r1 = s.get(checkURL)
 		soup = BeautifulSoup(r1.content, 'html.parser')
 		
@@ -104,7 +106,7 @@ with requests.session() as s:
 		print('numOfResults= '+str(numOfResults))
 		print('numOfPages= '+str(numOfPages))
 		
-		noProbates=0
+		noMatchs=0
 		while page <= numOfPages:
 			
 			if page > 1: #get next page
@@ -119,7 +121,7 @@ with requests.session() as s:
 					print(nextPageURL)
 				r1 = s.get(nextPageURL)
 				soup = BeautifulSoup(r1.content, 'html.parser')
-			#Loop over and visit each result and check if probate
+			#Loop over and visit each result and check if Match
 			properties = soup.find("ul", {"id" : "properties"})
 			adverts = properties.findAll("li", {"class" : lambda L: L and L.startswith('result')})
 			for advert in adverts:
@@ -137,15 +139,15 @@ with requests.session() as s:
 				soup = BeautifulSoup(r1.content, 'html.parser')
 				advertDesc = str(soup.find("div", {"class" : "panel-content description-tabcontent"}))
 				
-				if any(x in advertDesc.lower() for x in keywords): #check if probate
-					noProbates +=1
+				if any(x in advertDesc.lower() for x in keywords): #check if Match
+					noMatchs +=1
 					advertMatch = {}
 					reduced=False
 					addedOrReduced = datetime.now().date()
 					advert = soup.find("div", {"id" : "details-results"})
 					propId = advert["data-property-id"]
-					if os.environ.get('MORPH_DEBUG') == "1":
-						print('Found Probate '+propId)
+					#if os.environ.get('MORPH_DEBUG') == "1":
+					print('Found Match '+propId)
 
 					details = soup.find("div", {"class" : "details-heading"})
 					title = details.h1.text
@@ -170,7 +172,7 @@ with requests.session() as s:
 					
 					saveToStore(advertMatch)
 			page +=1
-		totalNoProbates = totalNoProbates+noProbates
-		print('Found '+str(noProbates)+' Probate Properties in this search of '+location)
-print('Found a total of '+str(totalNoProbates)+' Probate Properties in this run')
+		totalNoMatchs = totalNoMatchs+noMatchs
+		print('Found '+str(noMatchs)+' Matches in this search')
+print('Found a total of '+str(totalNoMatchs)+' Matches in run')
 sys.exit()
