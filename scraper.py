@@ -14,7 +14,6 @@ import math
 import re
 import json
 
-
 timestr = time.strftime("%d%m%Y-%H%M%S")
 currentScriptName=os.path.basename(__file__)
 
@@ -138,14 +137,16 @@ with requests.session() as s:
 				soup = BeautifulSoup(r1.content, 'html.parser')
 				advertDesc = str(soup.find("div", {"class" : "panel-content description-tabcontent"}))
 				
-				if any(x in advertDesc for x in keywords): #check if probate
+				if any(x in advertDesc.lower() for x in keywords): #check if probate
 					noProbates +=1
 					advertMatch = {}
 					reduced=False
 					addedOrReduced = datetime.now().date()
 					advert = soup.find("div", {"id" : "details-results"})
 					propId = advert["data-property-id"]
-					
+					if os.environ.get('MORPH_DEBUG') == "1":
+						print('Found Probate '+propId)
+
 					details = soup.find("div", {"class" : "details-heading"})
 					title = details.h1.text
 					address = details.find("p", {"class" : ""}).text
