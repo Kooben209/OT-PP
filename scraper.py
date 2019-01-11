@@ -79,7 +79,7 @@ with requests.session() as s:
 		params = urlparse.parse_qs(parsedURL.query,keep_blank_values=1)
 			
 		#Get first page of results
-		print('Requesting results')
+		print('Requesting results for '+location)
 		r1 = s.get(checkURL)
 		soup = BeautifulSoup(r1.content, 'html.parser')
 		
@@ -183,6 +183,6 @@ with requests.session() as s:
 					saveToStore(advertMatch)
 			page +=1
 		totalNoMatchs = totalNoMatchs+noMatchs
-		print('Found '+str(noMatchs)+' Matches in this search')
+		print('Found '+str(noMatchs)+' Matches in this search of '+location)
 print('Found a total of '+str(totalNoMatchs)+' Matches in run')
 sys.exit()
