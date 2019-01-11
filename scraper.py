@@ -123,6 +123,10 @@ with requests.session() as s:
 				soup = BeautifulSoup(r1.content, 'html.parser')
 			#Loop over and visit each result and check if Match
 			properties = soup.find("ul", {"id" : "properties"})
+			if properties is None:
+				print('nothing found on page - continue')
+				page +=1
+				continue
 			adverts = properties.findAll("li", {"class" : lambda L: L and L.startswith('result')})
 			for advert in adverts:
 				if os.environ.get('MORPH_DEBUG') == "1":
@@ -144,7 +148,7 @@ with requests.session() as s:
 					agentFull = advert.find("div", {"class" : "agent"}).p.text.replace('Marketed by ','').strip()
 					agent = agentFull.split('-', 1)[0].strip()
 					if any(x in agent.lower() for x in excludeAgents):
-						continue;
+						continue
 					
 					noMatchs +=1
 					advertMatch = {}
