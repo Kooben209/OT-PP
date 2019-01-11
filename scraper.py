@@ -127,7 +127,7 @@ with requests.session() as s:
 			for advert in adverts:
 				if os.environ.get('MORPH_DEBUG') == "1":
 					print('searching through results')
-
+					
 				resultLink = advert.find("span", {"class" : "title"}).a['href']
 				
 				#get individual result page
@@ -140,6 +140,12 @@ with requests.session() as s:
 				advertDesc = str(soup.find("div", {"class" : "panel-content description-tabcontent"}))
 				
 				if any(x in advertDesc.lower() for x in keywords): #check if Match
+					
+					agentFull = advert.find("div", {"class" : "agent"}).p.text.replace('Marketed by ','').strip()
+					agent = agentFull.split('-', 1)[0].strip()
+					if any(x in agent.lower() for x in excludeAgents):
+						continue;
+					
 					noMatchs +=1
 					advertMatch = {}
 					reduced=False
