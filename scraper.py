@@ -13,20 +13,21 @@ import urllib.parse as urlparse
 import math
 import re
 import json
+import random
 
-#import setEnvs
+import setEnvs
 
 timestr = time.strftime("%d%m%Y-%H%M%S")
 currentScriptName=os.path.basename(__file__)
 
 def createStore():
-	scraperwiki.sqlite.execute("CREATE TABLE IF NOT EXISTS 'otmdata' ( 'propId' TEXT, link TEXT, title TEXT, address TEXT, price BIGINT, 'displayPrice' TEXT, image1 TEXT, 'pubDate' DATETIME, 'addedOrReduced' DATE, reduced BOOLEAN, location TEXT, CHECK (reduced IN (0, 1)), PRIMARY KEY('propId'))")
+	scraperwiki.sqlite.execute("CREATE TABLE IF NOT EXISTS 'otmdata' ( 'propId' TEXT, link TEXT, title TEXT, address TEXT, price BIGINT, 'displayPrice' TEXT, image1 TEXT, 'pubDate' DATETIME, 'addedOrReduced' DATE, reduced BOOLEAN, location TEXT, hashTagLocation TEXT, postContent TEXT, CHECK (reduced IN (0, 1)), PRIMARY KEY('propId'))")
 	scraperwiki.sqlite.execute("CREATE UNIQUE INDEX IF NOT EXISTS 'otmdata_propId_unique' ON 'otmdata' ('propId')")
 
 def saveToStore(data):
-	scraperwiki.sqlite.execute("CREATE TABLE IF NOT EXISTS 'otmdata' ( 'propId' TEXT, link TEXT, title TEXT, address TEXT, price BIGINT, 'displayPrice' TEXT, image1 TEXT, 'pubDate' DATETIME, 'addedOrReduced' DATE, reduced BOOLEAN, location TEXT, CHECK (reduced IN (0, 1)), PRIMARY KEY('propId'))")
+	scraperwiki.sqlite.execute("CREATE TABLE IF NOT EXISTS 'otmdata' ( 'propId' TEXT, link TEXT, title TEXT, address TEXT, price BIGINT, 'displayPrice' TEXT, image1 TEXT, 'pubDate' DATETIME, 'addedOrReduced' DATE, reduced BOOLEAN, location TEXT, hashTagLocation TEXT, postContent TEXT, CHECK (reduced IN (0, 1)), PRIMARY KEY('propId'))")
 	scraperwiki.sqlite.execute("CREATE UNIQUE INDEX IF NOT EXISTS 'otmdata_propId_unique' ON 'otmdata' ('propId')")
-	scraperwiki.sqlite.execute("INSERT OR IGNORE INTO 'otmdata' VALUES (?,?,?,?,?,?,?,?,?,?,?)", (data['propId'], data['link'], data['title'], data['address'], data['price'], data['displayPrice'], data['image1'], data['pubDate'], data['addedOrReduced'], data['reduced'], data['location']))
+	scraperwiki.sqlite.execute("INSERT OR IGNORE INTO 'otmdata' VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", (data['propId'], data['link'], data['title'], data['address'], data['price'], data['displayPrice'], data['image1'], data['pubDate'], data['addedOrReduced'], data['reduced'], data['location'],data['hashTagLocation'],data['postContent']))
 
 def parseAskingPrice(aPrice):
 	try:
@@ -36,6 +37,8 @@ def parseAskingPrice(aPrice):
 	return value
 
 filtered_dict = {k:v for (k,v) in os.environ.items() if 'MORPH_URL' in k}
+
+postTemplates = {k:v for (k,v) in os.environ.items() if 'ENTRYTEXT' in k}
 
 excludeAgents = []
 if os.environ.get("MORPH_EXCLUDE_AGENTS") is not None:
@@ -50,6 +53,8 @@ if os.environ.get("MORPH_KEYWORDS") is not None:
 	
 sleepTime = 5
 
+
+
 if os.environ.get("MORPH_SLEEP") is not None:
 	sleepTime = int(os.environ["MORPH_SLEEP"])
 
@@ -59,6 +64,17 @@ if os.environ.get("MORPH_DOMAIN") is not None:
 if os.environ.get("MORPH_FIRST_RUN") is not None:
 	if os.environ.get('MORPH_FIRST_RUN') == "1":
 		createStore()
+
+if os.environ.get("MORPH_DB_ADD_COL") is not None:
+	if os.environ.get("MORPH_DB_ADD_COL") == '1':
+		try:
+			scraperwiki.sqlite.execute('ALTER TABLE data ADD COLUMN hashTagLocation TEXT')
+		except:
+			print('col - hashTagLocation exists')
+		try:
+			scraperwiki.sqlite.execute('ALTER TABLE data ADD COLUMN postContent TEXT')
+		except:
+			print('col - postContent exists')
 	
 	
 with requests.session() as s:
@@ -68,6 +84,7 @@ with requests.session() as s:
 	totalNoMatchs=0
 	for k, v in filtered_dict.items():
 		location = k.replace("MORPH_URL_","").replace("_"," ").title()
+		hashTagLocation = k.replace("MORPH_URL_","").replace("_"," ").title().replace(" ","")
 		checkURL = v
 		if os.environ.get('MORPH_DEBUG') == "1":
 			print(checkURL)
@@ -144,7 +161,8 @@ with requests.session() as s:
 				advertDesc = str(soup.find("div", {"class" : "panel-content description-tabcontent"}))
 				
 				if any(x in advertDesc.lower() for x in keywords): #check if Match
-					
+
+					postKey = random.choice(list(postTemplates))
 					agentFull = advert.find("div", {"class" : "agent"}).p.text.replace('Marketed by ','').strip()
 					agent = agentFull.split('-', 1)[0].strip()
 					if any(x in agent.lower() for x in excludeAgents):
@@ -179,6 +197,8 @@ with requests.session() as s:
 					advertMatch['addedOrReduced'] = addedOrReduced
 					advertMatch['reduced'] = reduced
 					advertMatch['location'] = location
+					advertMatch['hashTagLocation'] = address
+					advertMatch['postContent'] = postTemplates[postKey].format(title, hashTagLocation, displayPrice)
 					
 					saveToStore(advertMatch)
 			page +=1
