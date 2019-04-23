@@ -68,11 +68,11 @@ if os.environ.get("MORPH_FIRST_RUN") is not None:
 if os.environ.get("MORPH_DB_ADD_COL") is not None:
 	if os.environ.get("MORPH_DB_ADD_COL") == '1':
 		try:
-			scraperwiki.sqlite.execute('ALTER TABLE data ADD COLUMN hashTagLocation TEXT')
+			scraperwiki.sqlite.execute('ALTER TABLE otmdata ADD COLUMN hashTagLocation TEXT')
 		except:
 			print('col - hashTagLocation exists')
 		try:
-			scraperwiki.sqlite.execute('ALTER TABLE data ADD COLUMN postContent TEXT')
+			scraperwiki.sqlite.execute('ALTER TABLE otmdata ADD COLUMN postContent TEXT')
 		except:
 			print('col - postContent exists')
 	
