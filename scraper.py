@@ -163,8 +163,7 @@ with requests.session() as s:
 				if any(x in advertDesc.lower() for x in keywords): #check if Match
 
 					postKey = random.choice(list(postTemplates))
-					agentFull = advert.find("div", {"class" : "agent"}).p.text.replace('Marketed by ','').strip()
-					agent = agentFull.split('-', 1)[0].strip()
+					agent = agent = soup.find("h2", {"class" : "agent-name"}).text.strip()
 					if any(x in agent.lower() for x in excludeAgents):
 						continue
 					
